@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "999137185797",
+    "project_id": "pruebafirebase-55da2",
+    "storage_bucket": "pruebafirebase-55da2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:999137185797:android:a66090c940fbed523ecc6c",
+        "android_client_info": {
+          "package_name": "com.example.pruebafirebase"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "999137185797-q7oau2m36bn7rq089667jon0n2m94sj6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSE1ZfeeE86WSfASRwermXJeKUx8gUN4Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "999137185797-q7oau2m36bn7rq089667jon0n2m94sj6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

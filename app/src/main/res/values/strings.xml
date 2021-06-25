@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">pruebaFirebase</string>
+    <string name="nueva_tarea">Nueva Tarea</string>
+    <string name="descripcion_tarea">Descripción de la tarea</string>
+    <string name="normal">Normal</string>
+    <string name="importante">Importante</string>
+    <string name="urgente">Urgente</string>
+</resources>
