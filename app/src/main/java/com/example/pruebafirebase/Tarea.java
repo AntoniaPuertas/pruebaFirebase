@@ -1,6 +1,8 @@
 package com.example.pruebafirebase;
 
-public class Tarea {
+import java.io.Serializable;
+
+public class Tarea implements Serializable {
     public enum Tipo{
         URGENTE,
         IMPORTANTE,
