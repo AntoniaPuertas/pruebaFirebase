@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recycler;
     private ArrayList<Tarea> listaTareas;
     private TareasAdapter adapter;
+    private FirebaseFirestore db;
 
     private FloatingActionButton floatingActionButton;
     @Override
@@ -40,7 +41,10 @@ public class MainActivity extends AppCompatActivity {
         recycler = findViewById(R.id.recycler);
         floatingActionButton = findViewById(R.id.fBAdd);
 
+        db = FirebaseFirestore.getInstance();
+
         listaTareas = Datos.getInstance().getListaTareas();
+        getTareasServer();
         adapter = new TareasAdapter(listaTareas, this);
         recycler.setAdapter(adapter);
         recycler.setLayoutManager(new LinearLayoutManager(this));
@@ -53,5 +57,36 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    public void getTareasServer(){
+        db.collection("tareas")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                String id = document.getId();
+                                Map<String, Object> datos = document.getData();
+                                String descripcion = (String)datos.get("descripcion");
+                                String fecha = (String)datos.get("fecha");
+                                String tipoString = (String)datos.get("tipo");
+                                Tarea.Tipo tipo = Tarea.Tipo.IMPORTANTE;
+                                if(tipoString.equals("URGENTE")){
+                                    tipo = Tarea.Tipo.URGENTE;
+                                }else if(tipoString.equals("NORMAL")){
+                                    tipo = Tarea.Tipo.NORMAL;
+                                }
+                                Tarea tarea = new Tarea(id, descripcion, fecha, tipo);
+                                listaTareas.add(tarea);
+                                Log.d(TAG, document.getId() + " => " + document.getData());
+                                adapter.notifyDataSetChanged();
+                            }
+                        } else {
+                            Log.w(TAG, "Error bajando datos del servidor.", task.getException());
+                        }
+                    }
+                });
     }
 }

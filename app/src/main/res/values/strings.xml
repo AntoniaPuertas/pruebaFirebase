@@ -5,4 +5,9 @@
     <string name="normal">Normal</string>
     <string name="importante">Importante</string>
     <string name="urgente">Urgente</string>
+    <string name="seleccionaFecha">Selecciona una fecha</string>
+    <string name="fecha">Fecha</string>
+    <string name="fecha_formato">Fecha: </string>
+    <string name="crear_tarea">Crear Tarea</string>
+    <string name="mensaje_descripcion">Debes poner una descripción</string>
 </resources>
