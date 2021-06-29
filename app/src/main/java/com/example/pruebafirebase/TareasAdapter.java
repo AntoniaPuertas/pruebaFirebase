@@ -53,27 +53,31 @@ public class TareasAdapter extends RecyclerView.Adapter<TareasAdapter.TareaHolde
         return listaTareas.size();
     }
 
-    class TareaHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    class TareaHolder extends RecyclerView.ViewHolder{
 
         ImageView imgTipo;
         TextView txtFecha;
         TextView txtDescripcion;
+        ImageView imgEdit;
 
         public TareaHolder(@NonNull View itemView) {
             super(itemView);
             imgTipo = itemView.findViewById(R.id.imgTipo);
             txtFecha = itemView.findViewById(R.id.txtFechaItem);
             txtDescripcion = itemView.findViewById(R.id.txtDescripcionItem);
-            itemView.setOnClickListener(this);
+            imgEdit = itemView.findViewById(R.id.imgEdit);
+
+            imgEdit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int posicion = getLayoutPosition();
+                    Tarea tarea = listaTareas.get(posicion);
+                    Intent intent = new Intent(context, EditarTareaActivity.class);
+                    intent.putExtra("posicion", posicion);
+                    context.startActivity(intent);
+                }
+            });
         }
 
-        @Override
-        public void onClick(View v) {
-            int posicion = getLayoutPosition();
-            Tarea tarea = listaTareas.get(posicion);
-            Intent intent = new Intent(context, EditarTareaActivity.class);
-            intent.putExtra("item", tarea);
-            context.startActivity(intent);
-        }
     }
 }

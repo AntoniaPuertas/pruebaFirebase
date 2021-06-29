@@ -20,6 +20,14 @@ public class Tarea implements Serializable {
         this.tipo = tipo;
     }
 
+    public Tarea(String descripcion, String fecha, Tipo tipo) {
+        this.descripcion = descripcion;
+        this.fecha = fecha;
+        this.tipo = tipo;
+    }
+
+    public Tarea(){}
+
     public String getId() {
         return id;
     }
@@ -50,5 +58,15 @@ public class Tarea implements Serializable {
 
     public void setTipo(Tipo tipo) {
         this.tipo = tipo;
+    }
+
+    public String getTipoString(){
+        String tipoString = "URGENTE";
+        if(tipo == Tipo.IMPORTANTE){
+            tipoString = "IMPORTANTE";
+        }else if(tipo == Tipo.NORMAL){
+            tipoString = "NORMAL";
+        }
+        return tipoString;
     }
 }

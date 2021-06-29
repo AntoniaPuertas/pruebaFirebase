@@ -34,6 +34,7 @@ public class NuevaTareaActivity extends AppCompatActivity {
     private Button btnCrearNuevaTarea;
     private RadioGroup rgTipo;
     String fecha_string;
+    Tarea.Tipo tipo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,34 +59,29 @@ public class NuevaTareaActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 DialogFragment newFragment = new DatePickerFragment();
-                newFragment.show(getSupportFragmentManager(), getString(R.string.seleccionaFecha));
+                newFragment.show(getSupportFragmentManager(), "nueva");
             }
         });
 
         rgTipo.check(R.id.rbNormal);
+        tipo = Tarea.Tipo.NORMAL;
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        // Create a new user with a first and last name
-        Map<String, Object> tarea = new HashMap<>();
-        tarea.put("descripcion", "Cortarme el pelo");
-        tarea.put("fecha", "28/06/2021");
-        tarea.put("tipo", "IMPORTANTE");
-
-        // Add a new document with a generated ID
-        db.collection("tareas")
-                .add(tarea)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error adding document", e);
-                    }
-                });
+        rgTipo.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch(checkedId){
+                    case R.id.rbImportante:
+                        tipo = Tarea.Tipo.IMPORTANTE;
+                        break;
+                    case R.id.rbNormal:
+                        tipo = Tarea.Tipo.NORMAL;
+                        break;
+                    case R.id.rbUrgente:
+                        tipo = Tarea.Tipo.URGENTE;
+                        break;
+                }
+            }
+        });
 
     }
 
@@ -94,6 +90,7 @@ public class NuevaTareaActivity extends AppCompatActivity {
         String dia_string = Integer.toString(day);
         String anio_string = Integer.toString(year);
         fecha_string = getResources().getString(R.string.fecha_formato) + dia_string + " / " + mes_string + " / " + anio_string;
+        txtFecha.setText(fecha_string);
     }
     public void mostrarFechaActual(){
         Calendar calendar = Calendar.getInstance();
@@ -104,12 +101,43 @@ public class NuevaTareaActivity extends AppCompatActivity {
     }
 
     public void crearTarea(){
+        Tarea tarea = new Tarea();
         String desc = editDescripcion.getText().toString();
 
         if(desc.trim().isEmpty()){
             Toast.makeText(NuevaTareaActivity.this, R.string.mensaje_descripcion, Toast.LENGTH_SHORT).show();
         }else{
+            tarea.setDescripcion(desc);
+            tarea.setFecha(fecha_string);
+            tarea.setTipo(tipo);
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            // Create a new user with a first and last name
+            Map<String, Object> tareaMap = new HashMap<>();
+            tareaMap.put("descripcion", desc);
+            tareaMap.put("fecha", fecha_string);
+            tareaMap.put("tipo", tarea.getTipoString());
 
+
+
+            // Add a new document with a generated ID
+            db.collection("tareas")
+                    .add(tarea)
+                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        @Override
+                        public void onSuccess(DocumentReference documentReference) {
+                            Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
+                            tarea.setId(documentReference.getId());
+                            Datos.addTarea(tarea);
+                            Toast.makeText(NuevaTareaActivity.this, R.string.tarea_creada, Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.w(TAG, "Error adding document", e);
+                        }
+                    });
         }
     }
 }

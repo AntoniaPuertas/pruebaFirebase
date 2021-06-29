@@ -10,4 +10,8 @@
     <string name="fecha_formato">Fecha: </string>
     <string name="crear_tarea">Crear Tarea</string>
     <string name="mensaje_descripcion">Debes poner una descripción</string>
+    <string name="guardar_cambios">Guardar cambios</string>
+    <string name="cambios_subidos">Cambios subidos al servidor</string>
+    <string name="tarea_creada">Tarea creada</string>
+    <string name="modificar_tarea">Modificar Tarea</string>
 </resources>

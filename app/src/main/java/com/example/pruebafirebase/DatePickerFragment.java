@@ -25,7 +25,14 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
 
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-        NuevaTareaActivity activity = (NuevaTareaActivity) getActivity();
-        activity.getFechaSeleccionada(year, month, dayOfMonth);
+        String tag = (String)this.getTag();
+        if(tag.equals("nueva")){
+            NuevaTareaActivity activity = (NuevaTareaActivity) getActivity();
+            activity.getFechaSeleccionada(year, month, dayOfMonth);
+        }else if(tag.equals("editar")){
+            EditarTareaActivity activity = (EditarTareaActivity) getActivity();
+            activity.getFechaSeleccionada(year, month, dayOfMonth);
+        }
+
     }
 }
