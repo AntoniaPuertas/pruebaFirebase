@@ -1,12 +1,20 @@
 package com.example.pruebafirebase;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,6 +24,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -25,13 +34,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements RecyclerItemTouchHelper.RecyclerItemTouchHelperListener{
     private static final String TAG = "MainActivity";
 
     private RecyclerView recycler;
     private ArrayList<Tarea> listaTareas;
     public static TareasAdapter adapter;
     private FirebaseFirestore db;
+    private ConstraintLayout constraintLayout;
 
     private FloatingActionButton floatingActionButton;
     @Override
@@ -40,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         recycler = findViewById(R.id.recycler);
+        constraintLayout = findViewById(R.id.constraintLayout);
         floatingActionButton = findViewById(R.id.fBAdd);
 
         db = FirebaseFirestore.getInstance();
@@ -47,8 +58,14 @@ public class MainActivity extends AppCompatActivity {
         listaTareas = Datos.getInstance().getListaTareas();
         getTareasServer();
         adapter = new TareasAdapter(listaTareas, this);
-        recycler.setAdapter(adapter);
+
         recycler.setLayoutManager(new LinearLayoutManager(this));
+        recycler.setItemAnimator(new DefaultItemAnimator());
+        recycler.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        recycler.setAdapter(adapter);
+
+        ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
+        new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recycler);
 
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,21 +75,60 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
-            @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return true;
-            }
+    }
 
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                eliminarTarea(listaTareas.get(viewHolder.getAdapterPosition()).getId());
-                listaTareas.remove(viewHolder.getAdapterPosition());
-                adapter.notifyItemRemoved(viewHolder.getAdapterPosition());
-            }
-        });
+    @Override
+    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
+        if (viewHolder instanceof TareasAdapter.TareaHolder) {
+            // get the removed item name to display it in snack bar
+            String name = listaTareas.get(viewHolder.getAdapterPosition()).getDescripcion();
 
-        helper.attachToRecyclerView(recycler);
+            // backup of removed item for undo purpose
+            final Tarea deletedItem = listaTareas.get(viewHolder.getAdapterPosition());
+            final int deletedIndex = viewHolder.getAdapterPosition();
+
+            // remove the item from recycler view
+            adapter.removeItem(viewHolder.getAdapterPosition());
+
+            // showing snack bar with Undo option
+            Snackbar snackbar = Snackbar
+                    .make(constraintLayout, name + " Eliminado de la lista!", Snackbar.LENGTH_LONG);
+            snackbar.setAction("Deshacer", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    // undo is selected, restore the deleted item
+                    adapter.restoreItem(deletedItem, deletedIndex);
+                }
+            });
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            builder.setTitle("Eliminado de la lista");
+            builder.setMessage("¿Seguro?");
+
+            builder.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
+
+                public void onClick(DialogInterface dialog, int which) {
+                    eliminarTarea(deletedItem.getId());
+                    dialog.dismiss();
+                }
+            });
+
+            builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    adapter.restoreItem(deletedItem, deletedIndex);
+                    dialog.dismiss();
+                }
+            });
+
+            AlertDialog alert = builder.create();
+            alert.show();
+
+        }
+
 
     }
 
@@ -83,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
+                            listaTareas.clear();
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 String id = document.getId();
                                 Map<String, Object> datos = document.getData();
